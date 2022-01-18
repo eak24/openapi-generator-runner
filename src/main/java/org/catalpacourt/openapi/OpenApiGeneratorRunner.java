@@ -1,6 +1,5 @@
 package org.catalpacourt.openapi;
 
-import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.catalpacourt.openapi.commandlinerunner.CommandLineRunner;
@@ -10,6 +9,7 @@ import picocli.CommandLine;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(
@@ -42,9 +42,9 @@ public class OpenApiGeneratorRunner implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception {
-        extension = new ObjectMapper().readValue(spec, Extension.class);
-        return null;
+    public Integer call() {
+        List<ProcessBuilder> processes = new SequentialProcessor().linearizeAndConvertToProcessBuilders(createProcessGraph());
+        return commandLineRunner.run(processes.iterator()).getExitCode();
     }
 
     public CommandLineRunner getCommandLineRunner() {
@@ -57,8 +57,8 @@ public class OpenApiGeneratorRunner implements Callable<Integer> {
 
     public void setSpec(File spec) throws IOException {
         ObjectMapper mapper = MapperWrapper.getMapper(spec.getAbsolutePath());
-        TreeNode node = mapper.readValue(spec, JsonNode.class);
-        extension = mapper.treeToValue(node.get("info").get("x-openapi-generator-runner"), Extension.class);
+        JsonNode node = mapper.readValue(spec, JsonNode.class);
+        extension = mapper.treeToValue(node.findValue(Extension.X_OPENAPI_GENERATOR_RUNNER), Extension.class);
         this.spec = spec;
         addDefaults();
     }

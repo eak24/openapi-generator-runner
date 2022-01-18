@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  * The SequentialProcessor orders nodes such that all dependents are before any given node.
  */
 public class SequentialProcessor {
-    public List<ProcessBuilder> process(ProcessNode graph) {
+    public List<ProcessBuilder> linearizeAndConvertToProcessBuilders(ProcessNode graph) {
         Map<ProcessNode, Set<ProcessNode>> nodeToDependencies = new HashMap<>();
         graph.forEach(p -> {
             p.dependents().forEach(n -> {

@@ -36,8 +36,9 @@ public class ProcessNode {
         this.next.add(node);
     }
 
-    public void afterLast(ProcessNode node) {
+    public ProcessNode afterLast(ProcessNode node) {
         this.last().addNext(node);
+        return node;
     }
 
     public ProcessNode last() {

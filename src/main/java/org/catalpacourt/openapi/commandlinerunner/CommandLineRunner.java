@@ -26,15 +26,12 @@ public class CommandLineRunner {
         this(isDryRun, new File(System.getProperty("user.dir")));
     }
 
-    public Result run(String command) {
+    public Result run(ProcessBuilder processBuilder) {
         System.out.print("$");
-        System.out.println(command);
+        System.out.println(processBuilder.command());
         if (isDryRun) {
             return new Result(0, "");
         }
-        ProcessBuilder processBuilder = new ProcessBuilder().directory(location);
-        command = "/bin/bash -c " + command;
-        processBuilder.command(command.split(" "));
 
         try {
             Process process = processBuilder.start();
@@ -64,10 +61,10 @@ public class CommandLineRunner {
         return new Result(1, "");
     }
 
-    public Result run(Iterator<String> commands) {
+    public Result run(Iterator<ProcessBuilder> processBuilders) {
         Result result = new Result(0, "");
-        while (commands.hasNext() && result.getExitCode() == 0) {
-            Result newResult = run(commands.next());
+        while (processBuilders.hasNext() && result.getExitCode() == 0) {
+            Result newResult = run(processBuilders.next());
             result = new Result(newResult.getExitCode(), result.getOutput() + newResult.getOutput());
         }
         return result;

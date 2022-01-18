@@ -12,12 +12,10 @@ import java.util.stream.Collectors;
 
 public class ExtensionToProcessGraphConverter extends ExtensionVisitor<ProcessNode> {
 
-    private final Extension extension;
     private final String specLocation;
     private final ProcessNode root = new ProcessNode();
 
     public ExtensionToProcessGraphConverter(Extension extension, String specLocation) {
-        this.extension = extension;
         this.specLocation = specLocation;
         visit(root, extension);
     }
@@ -36,8 +34,9 @@ public class ExtensionToProcessGraphConverter extends ExtensionVisitor<ProcessNo
         options.putIfAbsent("-o", name);
         String optionsString = generator.getGenerate().getOptions().entrySet().stream().map(e -> e.getKey() + " " + e.getValue()).collect(Collectors.joining(" "));
         ProcessNode node = new ProcessNode("npx @openapitools/openapi-generator-cli generate " + optionsString);
-        node.getProcessBuilder().directory(new File(name));
-        parent.next(node).next(new ProcessNode(generator.getInstall().getScript())).next(new ProcessNode(generator.getTest().getScript())).next(new ProcessNode(generator.getDeploy().getScript()));
+        node.last().next(new ProcessNode());
+        node.last().getProcessBuilder().directory(new File(parent.getProcessBuilder().directory(), name));
+        parent.next(node).afterLast(new ProcessNode(generator.getInstall().getScript())).next(new ProcessNode(generator.getTest().getScript())).next(new ProcessNode(generator.getDeploy().getScript()));
     }
 
     @Override

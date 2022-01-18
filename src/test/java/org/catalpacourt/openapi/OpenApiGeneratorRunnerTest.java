@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.catalpacourt.openapi.commandlinerunner.ProcessNode;
 import org.catalpacourt.openapi.schema.Extension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -64,11 +65,17 @@ public class OpenApiGeneratorRunnerTest {
 
     private List<ProcessBuilder> getSequentialCommands(File spec) throws IOException {
         SequentialProcessor sequentialProcessor = new SequentialProcessor();
-        return sequentialProcessor.process(createProcessGraph(spec));
+        return sequentialProcessor.linearizeAndConvertToProcessBuilders(createProcessGraph(spec));
     }
 
     private void writeValue(File file, Object object) throws IOException {
         MapperWrapper.getMapper(file.getAbsolutePath()).writeValue(file, object);
+    }
+
+    private void runSpec(File spec) throws Exception {
+        OpenApiGeneratorRunner openApiGeneratorRunner = new OpenApiGeneratorRunner();
+        openApiGeneratorRunner.setSpec(spec);
+        openApiGeneratorRunner.call();
     }
 
     @ParameterizedTest
@@ -80,7 +87,14 @@ public class OpenApiGeneratorRunnerTest {
 
     @ParameterizedTest
     @MethodSource("getSamples")
-    public void shouldCheckSequentialCommands() throws IOException {
-        writeValue(new File(SAMPLE_COMMANDS, "simple.json"), getSequentialCommands(new File(SAMPLES_DIRECTORY, "simple.json")));
+    public void shouldCheckSequentialCommands(String file) throws IOException {
+        writeValue(new File(SAMPLE_COMMANDS, file), getSequentialCommands(new File(SAMPLES_DIRECTORY, file)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getSamples")
+    @Disabled
+    public void shouldRunTheSpec(String file) throws Exception {
+        runSpec(new File(SAMPLES_DIRECTORY, file));
     }
 }
