@@ -38,7 +38,7 @@ public class OpenApiGeneratorRunner implements Callable<Integer> {
     }
 
     public ProcessNode createProcessGraph() {
-        return new ExtensionToProcessGraphConverter(extension, spec.getAbsolutePath()).createProcessGraph();
+        return new ExtensionToProcessGraphConverter(extension, spec.getAbsolutePath()).getRoot();
     }
 
     @Override

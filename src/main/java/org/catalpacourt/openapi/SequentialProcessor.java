@@ -42,6 +42,6 @@ public class SequentialProcessor {
             }
         }
 
-        return nodes.stream().map(ProcessNode::getProcessBuilder).collect(Collectors.toList());
+        return nodes.stream().map(ProcessNode::getProcessBuilder).filter(p -> !p.command().isEmpty()).collect(Collectors.toList());
     }
 }

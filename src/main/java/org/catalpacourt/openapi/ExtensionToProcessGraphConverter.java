@@ -1,61 +1,56 @@
 package org.catalpacourt.openapi;
 
 import org.catalpacourt.openapi.commandlinerunner.ProcessNode;
-import org.catalpacourt.openapi.schema.Action;
 import org.catalpacourt.openapi.schema.Extension;
 import org.catalpacourt.openapi.schema.Generator;
 import org.catalpacourt.openapi.schema.Info;
+import org.catalpacourt.openapi.schema.OpenApiGeneratorInfo;
 
 import java.io.File;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ExtensionToProcessGraphConverter {
+public class ExtensionToProcessGraphConverter extends ExtensionVisitor<ProcessNode> {
 
     private final Extension extension;
     private final String specLocation;
+    private final ProcessNode root = new ProcessNode();
 
     public ExtensionToProcessGraphConverter(Extension extension, String specLocation) {
         this.extension = extension;
         this.specLocation = specLocation;
+        visit(root, extension);
     }
 
-    public ProcessNode createProcessGraph() {
-        ProcessNode node = createProcessGraph(extension.getInfo());
-        ProcessNode afterInfo = node.last();
-        for (Map.Entry<String, Generator> generator : extension.getGenerators().entrySet()) {
-            String folderName = generator.getKey();
-            ProcessNode processNode = generator(generator.getValue(), folderName);
-            processNode.getProcessBuilder().directory(new File(folderName));
-            afterInfo.addNext(processNode);
-        }
-        return node;
+    @Override
+    protected void visit(ProcessNode parent, Extension extension) {
+        visit(parent, extension.getInfo());
+        extension.getGenerators().forEach((n, g) -> this.visit(parent.last(), n, g));
     }
 
-    private ProcessNode createProcessGraph(Info info) {
-        ProcessNode processNode = new ProcessNode("npm install @openapitools/openapi-generator-cli -g");
-        if (info.getOpenapiGenerator() != null && info.getOpenapiGenerator().getVersion() != null) {
-            processNode.afterLast(new ProcessNode("openapi-generator-cli version-manager set " + info.getOpenapiGenerator().getVersion()));
-        }
-        return processNode;
-    }
-
-    private ProcessNode generator(Generator generator, String outputLocation) {
+    @Override
+    protected void visit(ProcessNode parent, String name, Generator generator) {
         Map<String, String> options = generator.getGenerate().getOptions();
         options.putIfAbsent("-g", generator.getGeneratorName());
         options.putIfAbsent("-i", specLocation);
-        options.putIfAbsent("-o", outputLocation);
+        options.putIfAbsent("-o", name);
         String optionsString = generator.getGenerate().getOptions().entrySet().stream().map(e -> e.getKey() + " " + e.getValue()).collect(Collectors.joining(" "));
         ProcessNode node = new ProcessNode("npx @openapitools/openapi-generator-cli generate " + optionsString);
-        ProcessNode test = node.next(script(generator.getInstall())).next(script(generator.getTest()));
-        if (extension.getInfo().isDeploy()) {
-            ProcessNode deploy = script(generator.getDeploy());
-            test.addNext(deploy);
-        }
-        return node;
+        node.getProcessBuilder().directory(new File(name));
+        parent.next(node).next(new ProcessNode(generator.getInstall().getScript())).next(new ProcessNode(generator.getTest().getScript())).next(new ProcessNode(generator.getDeploy().getScript()));
     }
 
-    private ProcessNode script(Action action) {
-        return new ProcessNode(action.getScript());
+    @Override
+    protected void visit(ProcessNode parent, Info info) {
+        super.visit(parent.next(new ProcessNode("npm install @openapitools/openapi-generator-cli -g")), info);
+    }
+
+    @Override
+    protected void visit(ProcessNode parent, OpenApiGeneratorInfo openApiGeneratorInfo) {
+        super.visit(parent.next((new ProcessNode("openapi-generator-cli version-manager set " + openApiGeneratorInfo.getVersion()))), openApiGeneratorInfo);
+    }
+
+    public ProcessNode getRoot() {
+        return root;
     }
 }

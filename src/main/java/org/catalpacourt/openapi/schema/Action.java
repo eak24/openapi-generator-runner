@@ -15,6 +15,14 @@ public class Action {
         this.script = script;
     }
 
+    public String getGithub() {
+        return github;
+    }
+
+    public void setGithub(String github) {
+        this.github = github;
+    }
+
     public Action name(String name) {
         this.name = name;
         return this;
