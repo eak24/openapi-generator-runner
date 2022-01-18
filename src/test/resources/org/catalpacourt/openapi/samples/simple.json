@@ -1,0 +1,48 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Simple",
+    "description": "A simple spec with just the extension.",
+    "version": "1.0.0",
+    "x-openapi-generator-runner": {
+      "info": {
+        "openapi-generator": {
+          "version": "5.4.0"
+        }
+      },
+      "generators": {
+        "python": {
+          "generate": {
+            "templates": {
+              "README.mustache": "Welcome!"
+            },
+            "options": {
+              "packageName": "myPackage"
+            },
+            "directory": "https://github.com/myaccount/mypythonclient.git"
+          },
+          "install": {
+            "script": [
+              "pipenv install . --dev"
+            ]
+          },
+          "test": {
+            "script": [
+              "pipenv run pytest -n 8"
+            ]
+          },
+          "deploy": {
+            "github": "https://github.com/myaccount/mypythonclient.git"
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https"
+    }
+  ],
+  "paths": {
+  }
+}
