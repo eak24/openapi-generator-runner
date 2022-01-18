@@ -6,12 +6,13 @@
     "version": "1.0.0",
     "x-openapi-generator-runner": {
       "info": {
-        "openapi-generator": {
+        "openapiGenerator": {
           "version": "5.4.0"
         }
       },
       "generators": {
         "python": {
+          "generatorName": "python",
           "generate": {
             "templates": {
               "README.mustache": "Welcome!"

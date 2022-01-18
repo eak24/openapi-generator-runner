@@ -33,8 +33,12 @@ public class OpenApiGeneratorRunner implements Callable<Integer> {
         System.exit(exitCode);
     }
 
+    public void addDefaults() {
+        new ExtensionDefaultsProcessor().addDefaults(extension);
+    }
+
     public ProcessNode createProcessGraph() {
-        return new ExtensionVisitor(extension, spec.getAbsolutePath()).createProcessGraph();
+        return new ExtensionToProcessGraphConverter(extension, spec.getAbsolutePath()).createProcessGraph();
     }
 
     @Override
@@ -56,6 +60,7 @@ public class OpenApiGeneratorRunner implements Callable<Integer> {
         TreeNode node = mapper.readValue(spec, JsonNode.class);
         extension = mapper.treeToValue(node.get("info").get("x-openapi-generator-runner"), Extension.class);
         this.spec = spec;
+        addDefaults();
     }
 
     public Extension getExtension() {

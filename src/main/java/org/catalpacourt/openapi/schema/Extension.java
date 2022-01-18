@@ -3,6 +3,8 @@ package org.catalpacourt.openapi.schema;
 import java.util.Map;
 
 public class Extension {
+    public final static String X_OPENAPI_GENERATOR_RUNNER = "x-openapi-generator-runner";
+
     private Map<String, Generator> generators;
     private Info info;
 

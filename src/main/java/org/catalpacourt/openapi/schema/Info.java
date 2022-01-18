@@ -1,15 +1,15 @@
 package org.catalpacourt.openapi.schema;
 
 public class Info {
-    private String openapiGeneratorVersion;
+    private OpenApiGeneratorInfo openapiGenerator;
     private boolean deploy;
 
-    public String getOpenapiGeneratorVersion() {
-        return openapiGeneratorVersion;
+    public OpenApiGeneratorInfo getOpenapiGenerator() {
+        return openapiGenerator;
     }
 
-    public void setOpenapiGeneratorVersion(String openapiGeneratorVersion) {
-        this.openapiGeneratorVersion = openapiGeneratorVersion;
+    public void setOpenapiGenerator(OpenApiGeneratorInfo openapiGeneratorVersion) {
+        this.openapiGenerator = openapiGeneratorVersion;
     }
 
     public boolean isDeploy() {

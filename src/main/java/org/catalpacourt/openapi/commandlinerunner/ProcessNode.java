@@ -37,10 +37,15 @@ public class ProcessNode {
     }
 
     public void afterLast(ProcessNode node) {
-        while (!node.getNext().isEmpty()) {
-            node = node.getNext().iterator().next();
+        this.last().addNext(node);
+    }
+
+    public ProcessNode last() {
+        ProcessNode lastNode = this;
+        while (!lastNode.getNext().isEmpty()) {
+            lastNode = lastNode.getNext().iterator().next();
         }
-        node.addNext(node);
+        return lastNode;
     }
 
     /**

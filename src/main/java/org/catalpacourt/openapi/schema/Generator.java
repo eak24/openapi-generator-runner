@@ -1,11 +1,14 @@
 package org.catalpacourt.openapi.schema;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Generator {
     private String githubUrl;
     private Generate generate;
-    private Script install;
-    private Script test;
-    private Script deploy;
+    private Action install;
+    private Action test;
+    private Action deploy;
     private String generatorName;
 
     public String getGithubUrl() {
@@ -24,27 +27,27 @@ public class Generator {
         this.generate = generate;
     }
 
-    public Script getInstall() {
+    public Action getInstall() {
         return install;
     }
 
-    public void setInstall(Script install) {
+    public void setInstall(Action install) {
         this.install = install;
     }
 
-    public Script getTest() {
+    public Action getTest() {
         return test;
     }
 
-    public void setTest(Script test) {
+    public void setTest(Action test) {
         this.test = test;
     }
 
-    public Script getDeploy() {
+    public Action getDeploy() {
         return deploy;
     }
 
-    public void setDeploy(Script deploy) {
+    public void setDeploy(Action deploy) {
         this.deploy = deploy;
     }
 
@@ -54,5 +57,9 @@ public class Generator {
 
     public void setGeneratorName(String generatorName) {
         this.generatorName = generatorName;
+    }
+
+    public List<Action> actions() {
+        return Arrays.asList(install.name("install"), test.name("test"), deploy.name("deploy"));
     }
 }
