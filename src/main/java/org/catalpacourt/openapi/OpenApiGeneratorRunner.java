@@ -24,8 +24,12 @@ public class OpenApiGeneratorRunner implements Callable<Integer> {
     private Extension extension;
     private boolean isDryRun;
 
-    public OpenApiGeneratorRunner() {
+    public OpenApiGeneratorRunner(boolean isDryRun) {
         this.commandLineRunner = new CommandLineRunner(isDryRun);
+    }
+
+    public OpenApiGeneratorRunner() {
+        this(false);
     }
 
     public static void main(String... args) {
@@ -38,7 +42,7 @@ public class OpenApiGeneratorRunner implements Callable<Integer> {
     }
 
     public ProcessNode createProcessGraph() {
-        return new ExtensionToProcessGraphConverter(extension, spec.getAbsolutePath()).getRoot();
+        return new ExtensionToProcessGraphConverter(extension, spec.getPath()).getRoot();
     }
 
     @Override

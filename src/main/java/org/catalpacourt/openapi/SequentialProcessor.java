@@ -2,8 +2,8 @@ package org.catalpacourt.openapi;
 
 import org.catalpacourt.openapi.commandlinerunner.ProcessNode;
 
+import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * The SequentialProcessor orders nodes such that all dependents are before any given node.
@@ -41,7 +41,20 @@ public class SequentialProcessor {
                 nodesToProcess.removeAll(nodesToAdd);
             }
         }
-
-        return nodes.stream().map(ProcessNode::getProcessBuilder).filter(p -> !p.command().isEmpty()).collect(Collectors.toList());
+        List<ProcessBuilder> processBuilders = new ArrayList<>();
+        File currentDirectory = new File(".");
+        for (ProcessNode node : nodes) {
+            ProcessBuilder processBuilder = node.getProcessBuilder();
+            if (processBuilder.directory() != null) {
+                currentDirectory = processBuilder.directory();
+            } else {
+                processBuilder.directory(currentDirectory);
+            }
+            if (processBuilder.command().isEmpty()) {
+                continue;
+            }
+            processBuilders.add(processBuilder);
+        }
+        return processBuilders;
     }
 }

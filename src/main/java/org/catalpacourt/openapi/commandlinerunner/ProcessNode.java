@@ -1,5 +1,6 @@
 package org.catalpacourt.openapi.commandlinerunner;
 
+import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -22,6 +23,26 @@ public class ProcessNode {
 
     public ProcessNode() {
         this(new ArrayList<>());
+    }
+
+    public ProcessNode(File location) {
+        this();
+        processBuilder.directory(location);
+    }
+
+    public ProcessNode next(ProcessNode... nodes) {
+        List<ProcessNode> nodesList = Arrays.asList(nodes);
+        next(nodesList);
+        return nodesList.get(nodesList.size() - 1);
+    }
+
+    public ProcessNode next(List<ProcessNode> nodes) {
+        ProcessNode previous = this;
+        for (ProcessNode next : nodes) {
+            previous.next.add(next);
+            previous = next;
+        }
+        return previous;
     }
 
     public Collection<ProcessNode> getNext() {
@@ -47,17 +68,6 @@ public class ProcessNode {
             lastNode = lastNode.getNext().iterator().next();
         }
         return lastNode;
-    }
-
-    /**
-     * Allows chaining like node.next(first).next(second).next(third).
-     *
-     * @param node
-     * @return
-     */
-    public ProcessNode next(ProcessNode node) {
-        this.next.add(node);
-        return node;
     }
 
     public Set<ProcessNode> dependents() {

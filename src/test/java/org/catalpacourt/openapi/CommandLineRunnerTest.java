@@ -32,4 +32,10 @@ public class CommandLineRunnerTest {
         assertTrue(Integer.parseInt(commandLineRunner.run(new ProcessBuilder().command("git", "--version")).getOutput().substring(12).split("\\.")[0]) > 1);
         assertEquals(0, commandLineRunner.run(new ProcessBuilder().command("npm", "install", "@openapitools/openapi-generator-cli", "-g")).getExitCode());
     }
+
+    @Test
+    public void checkPythonDependencies() {
+        CommandLineRunner commandLineRunner = new CommandLineRunner(false);
+        assertEquals(0, commandLineRunner.run(new ProcessBuilder().command("pip", "--version")).getExitCode());
+    }
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.catalpacourt.openapi.commandlinerunner.ProcessNode;
 import org.catalpacourt.openapi.schema.Extension;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -17,13 +16,14 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.catalpacourt.openapi.schema.Extension.X_OPENAPI_GENERATOR_RUNNER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Assure correct defaults are added.
  */
 public class OpenApiGeneratorRunnerTest {
 
-    private static final File TEST_RESOURCES = new File("/Users/ethankeller/Repos/openapi-generator-runner/src/test/resources/org/catalpacourt/openapi");
+    private static final File TEST_RESOURCES = new File("src/test/resources/org/catalpacourt/openapi");
     private static final File SAMPLES_DIRECTORY = new File(TEST_RESOURCES, "samples");
     private static final File SAMPLE_PROCESS_GRAPHS = new File(TEST_RESOURCES, "processgraphs");
     private static final File SAMPLE_COMMANDS = new File(TEST_RESOURCES, "sequentialcommands");
@@ -73,9 +73,9 @@ public class OpenApiGeneratorRunnerTest {
     }
 
     private void runSpec(File spec) throws Exception {
-        OpenApiGeneratorRunner openApiGeneratorRunner = new OpenApiGeneratorRunner();
+        OpenApiGeneratorRunner openApiGeneratorRunner = new OpenApiGeneratorRunner(false);
         openApiGeneratorRunner.setSpec(spec);
-        openApiGeneratorRunner.call();
+        assertEquals(0, openApiGeneratorRunner.call());
     }
 
     @ParameterizedTest
@@ -93,7 +93,6 @@ public class OpenApiGeneratorRunnerTest {
 
     @ParameterizedTest
     @MethodSource("getSamples")
-    @Disabled
     public void shouldRunTheSpec(String file) throws Exception {
         runSpec(new File(SAMPLES_DIRECTORY, file));
     }

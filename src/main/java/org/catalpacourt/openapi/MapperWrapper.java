@@ -28,7 +28,7 @@ public class MapperWrapper {
                 jgen.writeArray(processBuilder.command().toArray(new String[]{}), 0, processBuilder.command().size());
                 File directory = processBuilder.directory();
                 if (directory != null) {
-                    jgen.writeStringField("directory", processBuilder.directory().getAbsolutePath());
+                    jgen.writeStringField("directory", processBuilder.directory().getPath());
                 }
                 jgen.writeEndObject();
             }

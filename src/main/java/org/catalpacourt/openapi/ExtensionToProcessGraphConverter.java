@@ -1,10 +1,7 @@
 package org.catalpacourt.openapi;
 
 import org.catalpacourt.openapi.commandlinerunner.ProcessNode;
-import org.catalpacourt.openapi.schema.Extension;
-import org.catalpacourt.openapi.schema.Generator;
-import org.catalpacourt.openapi.schema.Info;
-import org.catalpacourt.openapi.schema.OpenApiGeneratorInfo;
+import org.catalpacourt.openapi.schema.*;
 
 import java.io.File;
 import java.util.Map;
@@ -12,31 +9,51 @@ import java.util.stream.Collectors;
 
 public class ExtensionToProcessGraphConverter extends ExtensionVisitor<ProcessNode> {
 
+    private final static File GENERATED_DIRECTORY = new File("generated");
+    private final static File CURRENT_DIRECTORY = new File(".").getAbsoluteFile();
     private final String specLocation;
     private final ProcessNode root = new ProcessNode();
 
     public ExtensionToProcessGraphConverter(Extension extension, String specLocation) {
         this.specLocation = specLocation;
-        visit(root, extension);
+        root.getProcessBuilder().command("mkdir", "generated");
+        visit(root.next(new ProcessNode(GENERATED_DIRECTORY)), extension);
     }
 
     @Override
     protected void visit(ProcessNode parent, Extension extension) {
         visit(parent, extension.getInfo());
         extension.getGenerators().forEach((n, g) -> this.visit(parent.last(), n, g));
+        ProcessNode cleanup = new ProcessNode("cd ..");
+        cleanup.getProcessBuilder().directory(new File("."));
+        cleanup.next(new ProcessNode("rm -rf generated"));
+        parent.afterLast(cleanup);
     }
 
     @Override
     protected void visit(ProcessNode parent, String name, Generator generator) {
+        ProcessNode gitClone = new ProcessNode("git clone " + generator.getGenerate().getGithub() + " " + name);
+        ProcessNode chDir = new ProcessNode("cd " + name);
+        ProcessNode gitCheckout = new ProcessNode("git checkout " + generator.getGenerate().getTag());
+        gitCheckout.getProcessBuilder().directory(new File(GENERATED_DIRECTORY, name));
         Map<String, String> options = generator.getGenerate().getOptions();
-        options.putIfAbsent("-g", generator.getGeneratorName());
-        options.putIfAbsent("-i", specLocation);
-        options.putIfAbsent("-o", name);
-        String optionsString = generator.getGenerate().getOptions().entrySet().stream().map(e -> e.getKey() + " " + e.getValue()).collect(Collectors.joining(" "));
-        ProcessNode node = new ProcessNode("npx @openapitools/openapi-generator-cli generate " + optionsString);
-        node.last().next(new ProcessNode());
-        node.last().getProcessBuilder().directory(new File(parent.getProcessBuilder().directory(), name));
-        parent.next(node).afterLast(new ProcessNode(generator.getInstall().getScript())).next(new ProcessNode(generator.getTest().getScript())).next(new ProcessNode(generator.getDeploy().getScript()));
+        options.put("-g", generator.getGeneratorName());
+        options.put("-i", new File(CURRENT_DIRECTORY, specLocation).toString());
+        options.put("-o", name);
+        ProcessNode generate = new ProcessNode("npx @openapitools/openapi-generator-cli generate " + optionsToString(options));
+        parent.next(gitClone).next(chDir).next(gitCheckout).next(generate);
+        visit(parent.last(), "install", generator.getInstall());
+        visit(parent.last(), "test", generator.getTest());
+        visit(parent.last(), "deploy", generator.getDeploy());
+    }
+
+    private String optionsToString(Map<String, String> options) {
+        return options.entrySet().stream().map(e -> e.getKey() + " " + e.getValue()).collect(Collectors.joining(" "));
+    }
+
+    @Override
+    protected void visit(ProcessNode parent, String name, Action action) {
+        parent.next(action.getScript().stream().map(ProcessNode::new).collect(Collectors.toList()));
     }
 
     @Override
